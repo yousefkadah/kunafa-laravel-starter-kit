@@ -1,7 +1,7 @@
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
+import { ZiggyVue } from './ziggy';
 import { i18n } from '@/libs/i18n';
 import Vueform from '@vueform/vueform';
 import vueformConfig from '../../config/vueform.config';

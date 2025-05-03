@@ -47,7 +47,8 @@ class InstallCommand extends Command
                 'postcss' => '^8.4.38',
                 'tailwindcss' => '^3.4.17',
                 'vite' => '^5.0.6',
-                'sass' => '^1.72.0'
+                'sass' => '^1.72.0',
+                'ziggy-js' => '^1.8.1',
             ] + $packages;
         });
 
@@ -73,6 +74,9 @@ class InstallCommand extends Command
         // Copy Vue setup files
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/js', resource_path('js'));
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/css', resource_path('css'));
+        
+        // Generate Ziggy routes file
+        $this->generateZiggyFile();
         
         // Copy the authentication views
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/auth', resource_path('js/pages/Auth'));
@@ -231,5 +235,34 @@ EOT;
             base_path('package.json'),
             json_encode($packages, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).PHP_EOL
         );
+    }
+
+    /**
+     * Generate the ziggy.generated.js file for route handling
+     */
+    protected function generateZiggyFile(): void
+    {
+        $this->info('Generating Ziggy routes file...');
+        
+        // Run the artisan command to generate the routes file
+        $this->callSilent('ziggy:generate', [
+            'path' => resource_path('js/ziggy.generated.js'),
+        ]);
+        
+        // If the command didn't work (maybe the package is not installed), create a basic version
+        if (!(new Filesystem)->exists(resource_path('js/ziggy.generated.js'))) {
+            $this->warn('Ziggy command not available. Creating a basic ziggy.generated.js file...');
+            $ziggyContent = <<<'EOT'
+// This is a placeholder for the Ziggy routes.
+// To generate a proper file, run `php artisan ziggy:generate`
+export const Ziggy = {
+    url: '/',
+    port: null,
+    defaults: {},
+    routes: {},
+};
+EOT;
+            file_put_contents(resource_path('js/ziggy.generated.js'), $ziggyContent);
+        }
     }
 }

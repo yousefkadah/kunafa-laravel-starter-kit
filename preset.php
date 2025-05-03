@@ -32,7 +32,8 @@ return [
     | creation process.
     */
     'composer_dependencies' => [
-        // Inertia.js and Ziggy are now included in the package's composer.json
+        'inertiajs/inertia-laravel:^1.0',
+        'tightenco/ziggy:^2.0',
     ],
 
     /*

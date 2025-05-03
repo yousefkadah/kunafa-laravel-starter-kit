@@ -5,6 +5,7 @@ namespace Kunafa\StarterKit\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
+use Illuminate\Support\Str;
 
 class InstallCommand extends Command
 {
@@ -50,8 +51,8 @@ class InstallCommand extends Command
             ] + $packages;
         });
 
-        // Install Laravel Breeze for auth scaffolding
-        $this->requireComposerPackages(['laravel/breeze:^1.28']);
+        // Configure auth manually instead of using Breeze
+        $this->configureAuth();
         
         // Publish configuration
         $this->callSilent('vendor:publish', ['--tag' => 'kunafa-config']);
@@ -78,11 +79,61 @@ class InstallCommand extends Command
         // Install Inertia middleware
         $this->installInertiaMiddleware();
         
-        // Install auth scaffolding
-        $this->callSilent('breeze:install', ['--inertia' => true, '--dark' => true]);
+        // Create Blade template
+        $this->createBladeTemplate();
         
         $this->info('Kunafa Dashboard installed successfully with authentication components.');
         $this->comment('Please execute the "npm install && npm run dev" command to build your assets.');
+    }
+
+    /**
+     * Configure authentication manually instead of using Breeze
+     */
+    protected function configureAuth(): void
+    {
+        // Copy auth controllers
+        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/app/Http/Controllers/Auth', app_path('Http/Controllers/Auth'));
+        
+        // Add auth routes
+        $this->addAuthRoutes();
+        
+        // Create auth layout
+        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/js/layouts/auth', resource_path('js/layouts'));
+    }
+    
+    /**
+     * Add auth routes to web.php
+     */
+    protected function addAuthRoutes(): void
+    {
+        $routesPath = base_path('routes/web.php');
+        $routesContent = file_get_contents($routesPath);
+        
+        // Only add auth routes if they don't already exist
+        if (!str_contains($routesContent, 'AuthRoutesRegistrar::routes()')) {
+            $authRoutes = <<<'EOT'
+
+// Authentication Routes
+use App\Http\Controllers\Auth\AuthRoutesRegistrar;
+AuthRoutesRegistrar::routes();
+
+EOT;
+            file_put_contents($routesPath, $authRoutes . $routesContent);
+        }
+    }
+
+    /**
+     * Create Blade template
+     */
+    protected function createBladeTemplate(): void
+    {
+        // Ensure views directory exists
+        if (!(new Filesystem)->isDirectory(resource_path('views'))) {
+            (new Filesystem)->makeDirectory(resource_path('views'), 0755, true);
+        }
+        
+        // Copy app.blade.php
+        copy(__DIR__.'/../../stubs/views/app.blade.php', resource_path('views/app.blade.php'));
     }
 
     /**
@@ -117,35 +168,6 @@ class InstallCommand extends Command
             $updatedKernelContents = preg_replace($pattern, $replacement, $kernelContents);
             file_put_contents($kernelPath, $updatedKernelContents);
         }
-    }
-
-    /**
-     * Require composer packages
-     */
-    protected function requireComposerPackages(array $packages): bool
-    {
-        $composer = $this->option('composer');
-
-        if ($composer !== 'global') {
-            $command = ['php', $composer, 'require'];
-        }
-
-        $command = array_merge(
-            $command ?? ['composer', 'require'],
-            $packages
-        );
-
-        $process = new Process($command, base_path(), null, null, null);
-
-        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
-            $process->setTty(true);
-        }
-
-        $process->run(function ($type, $line) {
-            $this->output->write($line);
-        });
-
-        return $process->isSuccessful();
     }
 
     /**

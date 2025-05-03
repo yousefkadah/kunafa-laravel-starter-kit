@@ -15,37 +15,49 @@ A custom Laravel starter kit featuring the Kunafa Dashboard Vue template with RT
 
 ## Installation
 
-### Create a new Laravel project
+### Option 1: Quick Installation (Recommended)
+
+You can install Kunafa directly when creating a new Laravel project:
+
+```bash
+laravel new project-name --using=kunafa/laravel-starter-kit
+```
+
+This will set up everything for you automatically.
+
+### Option 2: Manual Installation
+
+#### Create a new Laravel project
 
 ```bash
 laravel new project-name
 cd project-name
 ```
 
-### Install the Kunafa Dashboard starter kit
+#### Install the Kunafa Dashboard starter kit
 
 ```bash
 composer require kunafa/laravel-starter-kit
 ```
 
-### Run the installation command
+#### Run the installation command
 
 ```bash
 php artisan kunafa:install
 ```
 
-### Install NPM dependencies and build assets
+#### Install NPM dependencies and build assets
 
 ```bash
 npm install
 npm run dev
 ```
 
-### Configure your .env file
+#### Configure your .env file
 
 Make sure you have set up your database connection in the `.env` file.
 
-### Run migrations
+#### Run migrations
 
 ```bash
 php artisan migrate

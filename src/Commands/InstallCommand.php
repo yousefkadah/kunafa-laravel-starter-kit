@@ -66,6 +66,10 @@ class InstallCommand extends Command
         // Copy configuration files
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/config', base_path('config'));
         
+        // Copy PostCSS config files to the root directory
+        copy(__DIR__.'/../../stubs/config/postcss.config.cjs', base_path('postcss.config.cjs'));
+        copy(__DIR__.'/../../stubs/config/.postcssrc.cjs', base_path('.postcssrc.cjs'));
+        
         // Copy Vue setup files
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/js', resource_path('js'));
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/css', resource_path('css'));

@@ -244,17 +244,53 @@ EOT;
     {
         $this->info('Generating Ziggy routes file...');
         
-        // Run the artisan command to generate the routes file
+        // Check if the Ziggy package is installed
+        $composer = json_decode(file_get_contents(base_path('composer.json')), true);
+        $ziggyInstalled = false;
+        
+        if (isset($composer['require']) && array_key_exists('tightenco/ziggy', $composer['require'])) {
+            $ziggyInstalled = true;
+        }
+        
+        // If Ziggy is not installed, install it first
+        if (!$ziggyInstalled) {
+            $this->info('Ziggy package not found. Installing Ziggy...');
+            $composer = $this->option('composer');
+            $composer = $composer === 'global' ? 'composer' : $composer;
+            
+            $process = Process::fromShellCommandline($composer.' require tightenco/ziggy', null, null, null, null);
+            $process->run();
+            
+            if (!$process->isSuccessful()) {
+                $this->warn('Could not install Ziggy package. Creating a placeholder file instead.');
+                $this->createZiggyPlaceholder();
+                return;
+            }
+        }
+        
+        // Try to run the artisan command to generate the routes file
         $this->callSilent('ziggy:generate', [
             'path' => resource_path('js/ziggy.generated.js'),
         ]);
         
-        // If the command didn't work (maybe the package is not installed), create a basic version
-        if (!(new Filesystem)->exists(resource_path('js/ziggy.generated.js'))) {
-            $this->warn('Ziggy command not available. Creating a basic ziggy.generated.js file...');
-            $ziggyContent = <<<'EOT'
+        // Check if the file was created successfully
+        if (!file_exists(resource_path('js/ziggy.generated.js'))) {
+            $this->warn('Failed to generate Ziggy routes. Creating a placeholder file instead.');
+            $this->createZiggyPlaceholder();
+        } else {
+            $this->info('Ziggy routes file generated successfully.');
+        }
+    }
+    
+    /**
+     * Create a placeholder Ziggy routes file
+     */
+    protected function createZiggyPlaceholder(): void
+    {
+        $ziggyContent = <<<'EOT'
 // This is a placeholder for the Ziggy routes.
-// To generate a proper file, run `php artisan ziggy:generate`
+// To generate a proper file, run `php artisan ziggy:generate` after installing the package with:
+// composer require tightenco/ziggy
 export const Ziggy = {
     url: '/',
     port: null,
@@ -262,7 +298,11 @@ export const Ziggy = {
     routes: {},
 };
 EOT;
-            file_put_contents(resource_path('js/ziggy.generated.js'), $ziggyContent);
+        // Make sure the directory exists
+        if (!(new Filesystem)->isDirectory(resource_path('js'))) {
+            (new Filesystem)->makeDirectory(resource_path('js'), 0755, true);
         }
+        file_put_contents(resource_path('js/ziggy.generated.js'), $ziggyContent);
+        $this->info('Created Ziggy placeholder file.');
     }
 }

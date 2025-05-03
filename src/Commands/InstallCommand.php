@@ -178,6 +178,20 @@ EOT;
     protected function addMiddlewareToKernel(): void
     {
         $kernelPath = app_path('Http/Kernel.php');
+        
+        // Check if Kernel.php exists
+        if (!(new Filesystem)->exists($kernelPath)) {
+            $this->warn('Kernel.php not found. Attempting to locate it...');
+            
+            // Try to find Kernel.php in the app directory
+            if ((new Filesystem)->exists(base_path('app/Http/Kernel.php'))) {
+                $kernelPath = base_path('app/Http/Kernel.php');
+            } else {
+                $this->warn('Kernel.php not found in the expected locations. Skipping middleware registration.');
+                return;
+            }
+        }
+        
         $kernelContents = file_get_contents($kernelPath);
         
         if (!str_contains($kernelContents, '\App\Http\Middleware\HandleInertiaRequests::class')) {

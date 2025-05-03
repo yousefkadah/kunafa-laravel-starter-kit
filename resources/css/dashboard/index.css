@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=fallback');
+
+/* Import data table styles */
+@import 'vue3-easy-data-table/dist/style.css';
+
+/* Dashboard specific utilities */
+.dashboard-content {
+  @apply w-full;
+}
+
+.dashboard-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-4;
+}
+
+.dashboard-table {
+  @apply w-full border-collapse;
+}
+
+/* RTL Support */
+[dir="rtl"] .dashboard-content {
+  @apply text-right;
+}
+
+[dir="rtl"] .dashboard-sidebar {
+  @apply mr-0 ml-4;
+}
+
+/* Custom colors - replacing SCSS variables */
+.border-kunafa-primary {
+  border-color: #1BB0E1;
+}
+
+.text-kunafa-primary {
+  color: #1BB0E1;
+}
+
+.bg-kunafa-primary {
+  background-color: #1BB0E1;
+}
+
+.border-kunafa-secondary {
+  border-color: #FBC432;
+}
+
+.text-kunafa-secondary {
+  color: #FBC432;
+}
+
+.bg-kunafa-secondary {
+  background-color: #FBC432;
+}

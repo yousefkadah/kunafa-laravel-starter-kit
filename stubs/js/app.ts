@@ -1,39 +1,35 @@
 import './bootstrap';
 import '../css/app.css';
 
-import { createApp, h, DefineComponent } from 'vue';
+import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { ZiggyVue } from './ziggy';
-import { i18n } from '@/libs/i18n';
-import Vueform from '@vueform/vueform';
-import vueformConfig from '../config/vueform.config';
-import { IconifyIconOffline, IconifyIconOnline, IconifyIconJSON } from '@iconify/vue';
-import VueEasyDataTable from 'vue3-easy-data-table';
-import 'vue3-easy-data-table/dist/style.css';
-import '@/css/additional-styles/iconify-custom.scss';
+import { ZiggyVue } from 'ziggy';
+import { i18n } from './libs/i18n';
+import IconifyPlugin from './plugins/iconifyPlugin';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Kunafa Dashboard';
+const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Kunafa Dashboard';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
+    resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob('./pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) });
         
         app.use(plugin)
-          .use(ZiggyVue)
-          .use(i18n)
-          .use(Vueform, vueformConfig);
+           .use(ZiggyVue)
+           .use(i18n)
+           .use(IconifyPlugin);
         
-        app.component('EasyDataTable', VueEasyDataTable);
-        app.component('IconifyIconOffline', IconifyIconOffline);
-        app.component('IconifyIconOnline', IconifyIconOnline);
-        app.component('IconifyIconJSON', IconifyIconJSON);
+        app.config.errorHandler = (error, instance, info) => {
+            console.error('Global error:', error);
+            console.error('Error instance:', instance);
+            console.error('Error info:', info);
+        };
         
         app.mount(el);
     },
     progress: {
-        color: '#4B5563',
+        color: 'hsl(var(--primary))',
     },
 });

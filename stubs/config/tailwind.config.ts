@@ -1,8 +1,8 @@
-import type { Config } from 'tailwindcss'
-import forms from '@tailwindcss/forms'
-import typography from '@tailwindcss/typography'
-import defaultTheme from 'tailwindcss/defaultTheme'
-import animate from 'tailwindcss-animate'
+import type { Config } from 'tailwindcss';
+import defaultTheme from 'tailwindcss/defaultTheme';
+import forms from '@tailwindcss/forms';
+import typography from '@tailwindcss/typography';
+import animate from 'tailwindcss-animate';
 
 export default {
   darkMode: ['class'],
@@ -10,7 +10,7 @@ export default {
     './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
     './storage/framework/views/*.php',
     './resources/views/**/*.blade.php',
-    './resources/js/**/*.vue',
+    './resources/js/**/*.{vue,js,ts,jsx,tsx}',
   ],
   theme: {
     container: {
@@ -30,17 +30,17 @@ export default {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
-          50: '#f2f8fd',
-          100: '#e3f0fb',
-          200: '#c3e1f5',
-          300: '#8fc9ec',
-          400: '#54abdf',
-          500: '#2991cf',
-          600: '#1a75af',
-          700: '#165e8f',
-          800: '#174f76',
-          900: '#194363',
-          950: '#112c42',
+          50: 'hsl(var(--primary-50))',
+          100: 'hsl(var(--primary-100))',
+          200: 'hsl(var(--primary-200))',
+          300: 'hsl(var(--primary-300))',
+          400: 'hsl(var(--primary-400))',
+          500: 'hsl(var(--primary-500))',
+          600: 'hsl(var(--primary-600))',
+          700: 'hsl(var(--primary-700))',
+          800: 'hsl(var(--primary-800))',
+          900: 'hsl(var(--primary-900))',
+          950: 'hsl(var(--primary-950))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -92,4 +92,4 @@ export default {
     },
   },
   plugins: [forms, typography, animate],
-} satisfies Config
+} satisfies Config;

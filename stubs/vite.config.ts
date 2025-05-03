@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
+import { fileURLToPath, URL } from 'node:url';
 import path from 'path';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.ts'],
+            input: 'resources/js/app.ts',
             refresh: true,
         }),
         vue({
@@ -18,14 +18,14 @@ export default defineConfig({
                 },
             },
         }),
-        VueI18nPlugin({
-            include: [path.resolve(__dirname, './resources/js/libs/i18n/locales/**')],
-        }),
     ],
     resolve: {
         alias: {
-            '@': '/resources/js',
-            '~': '/resources/js',
+            '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
+            ziggy: path.resolve('vendor/tightenco/ziggy/dist/vue.es.js'),
         },
+    },
+    build: {
+        chunkSizeWarningLimit: 1600,
     },
 });

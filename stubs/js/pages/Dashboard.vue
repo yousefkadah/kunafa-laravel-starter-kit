@@ -2,7 +2,7 @@
   <DefaultLayout>
     <Head :title="t('dashboard.title')" />
 
-    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
       <div class="p-6 text-gray-900 dark:text-gray-100">
         {{ t('dashboard.welcome_message') }}
       </div>
@@ -49,7 +49,6 @@
 import { Head } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import DefaultLayout from '@/layouts/default.vue';
-import { ref } from 'vue';
 
 interface User {
   id: number;

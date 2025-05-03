@@ -1,95 +1,102 @@
 <template>
-  <div class="flex h-screen bg-gray-100 dark:bg-gray-900">
-    <div class="m-auto w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <div class="flex justify-center mb-8">
-        <KunafaLogo class="h-12 w-auto" />
+  <Head :title="t('login.title')" />
+  
+  <div class="min-h-screen flex flex-col justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
+    <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          {{ t('login.title') }}
+        </h1>
       </div>
-      
-      <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-white mb-8">
-        {{ $t('login.title') }}
-      </h2>
 
-      <div v-if="status" class="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100 rounded">
+      <div v-if="status" class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
         {{ status }}
       </div>
-      
+
       <form @submit.prevent="submit">
-        <div class="mb-4">
-          <label for="email" class="block text-gray-700 dark:text-gray-300 mb-2">{{ $t('login.email') }}</label>
-          <input 
-            id="email" 
-            type="email" 
-            v-model="form.email" 
-            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            :class="{'border-red-500': form.errors.email}"
+        <div>
+          <label class="block font-medium text-sm text-gray-700 dark:text-gray-300" for="email">
+            {{ t('login.email') }}
+          </label>
+          <input
+            id="email"
+            v-model="form.email"
+            type="email"
+            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-md shadow-sm"
             required
             autofocus
+            autocomplete="username"
           />
-          <div v-if="form.errors.email" class="text-red-500 mt-1 text-sm">{{ form.errors.email }}</div>
-        </div>
-        
-        <div class="mb-6">
-          <label for="password" class="block text-gray-700 dark:text-gray-300 mb-2">{{ $t('login.password') }}</label>
-          <input 
-            id="password" 
-            type="password" 
-            v-model="form.password"
-            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            :class="{'border-red-500': form.errors.password}"
-            required
-          />
-          <div v-if="form.errors.password" class="text-red-500 mt-1 text-sm">{{ form.errors.password }}</div>
-        </div>
-        
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center">
-            <input 
-              id="remember" 
-              type="checkbox" 
-              v-model="form.remember" 
-              class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
-            />
-            <label for="remember" class="ml-2 block text-gray-700 dark:text-gray-300">
-              {{ $t('login.remember_me') }}
-            </label>
+          <div v-if="form.errors.email" class="text-sm text-red-600 dark:text-red-400 mt-1">
+            {{ form.errors.email }}
           </div>
-          
-          <Link v-if="canResetPassword" :href="route('password.request')" class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
-            {{ $t('login.forgot_password') }}
-          </Link>
         </div>
-        
-        <button 
-          type="submit" 
-          class="w-full py-2 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-75 transition-colors duration-200"
-          :disabled="form.processing"
-        >
-          {{ $t('login.login') }}
-        </button>
+
+        <div class="mt-4">
+          <label class="block font-medium text-sm text-gray-700 dark:text-gray-300" for="password">
+            {{ t('login.password') }}
+          </label>
+          <input
+            id="password"
+            v-model="form.password"
+            type="password"
+            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 rounded-md shadow-sm"
+            required
+            autocomplete="current-password"
+          />
+          <div v-if="form.errors.password" class="text-sm text-red-600 dark:text-red-400 mt-1">
+            {{ form.errors.password }}
+          </div>
+        </div>
+
+        <div class="block mt-4">
+          <label class="flex items-center">
+            <input
+              v-model="form.remember"
+              type="checkbox"
+              class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-primary-600 shadow-sm focus:ring-primary-500 dark:focus:ring-primary-600 dark:focus:ring-offset-gray-800"
+            />
+            <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ t('login.remember_me') }}</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-end mt-4">
+          <Link
+            v-if="canResetPassword"
+            :href="route('password.request')"
+            class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800"
+          >
+            {{ t('login.forgot_password') }}
+          </Link>
+
+          <button
+            :class="{ 'opacity-25': form.processing }"
+            :disabled="form.processing"
+            class="ml-4 inline-flex items-center px-4 py-2 bg-primary-600 dark:bg-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-primary-700 dark:hover:bg-primary-700 focus:bg-primary-700 dark:focus:bg-primary-700 active:bg-primary-900 dark:active:bg-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
+          >
+            {{ t('login.login') }}
+          </button>
+        </div>
       </form>
-      
-      <div class="mt-6 text-center">
-        <span class="text-gray-600 dark:text-gray-400">{{ $t('login.no_account') }}</span>
-        <Link :href="route('register')" class="ml-1 text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300">
-          {{ $t('login.create_account') }}
-        </Link>
-      </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
-import { Link, useForm } from '@inertiajs/vue3';
-import KunafaLogo from '@/components/layouts/components/KunafaLogo.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
+interface Props {
+  canResetPassword: boolean;
+  status?: string;
+}
 
-const props = defineProps({
-  canResetPassword: Boolean,
-  status: String,
+const props = withDefaults(defineProps<Props>(), {
+  status: undefined
 });
+
+const { t } = useI18n();
 
 const form = useForm({
   email: '',

@@ -3,16 +3,16 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Kunafa Dashboard') }}</title>
+        <title inertia>{{ config('app.name', 'Kunafa Dashboard') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/kunafa/style.scss', 'resources/js/kunafa/app.js'])
+        @routes
+        @vite(['resources/js/app.ts', 'resources/css/app.css'])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

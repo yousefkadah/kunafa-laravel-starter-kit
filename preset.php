@@ -107,6 +107,9 @@ return [
     | has been installed.
     */
     'install_hook' => function ($console) {
+        // Create the HandleInertiaRequests middleware
+        installInertiaMiddleware();
+        
         // Copy stub files
         copy_starter_kit_stubs(__DIR__.'/stubs');
 
@@ -137,6 +140,90 @@ return [
 ];
 
 /**
+ * Install the Inertia middleware
+ *
+ * @return void 
+ */
+function installInertiaMiddleware()
+{
+    $handlerPath = app_path('Http/Middleware/HandleInertiaRequests.php');
+    
+    if (!file_exists($handlerPath)) {
+        $dir = dirname($handlerPath);
+        
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
+        file_put_contents($handlerPath, <<<'EOT'
+<?php
+
+namespace App\Http\Middleware;
+
+use Illuminate\Http\Request;
+use Inertia\Middleware;
+use Tightenco\Ziggy\Ziggy;
+
+class HandleInertiaRequests extends Middleware
+{
+    /**
+     * The root template that is loaded on the first page visit.
+     *
+     * @var string
+     */
+    protected $rootView = 'app';
+
+    /**
+     * Determine the current asset version.
+     */
+    public function version(Request $request): string|null
+    {
+        return parent::version($request);
+    }
+
+    /**
+     * Define the props that are shared by default.
+     *
+     * @return array<string, mixed>
+     */
+    public function share(Request $request): array
+    {
+        return array_merge(parent::share($request), [
+            'auth' => [
+                'user' => $request->user(),
+            ],
+            'ziggy' => function () use ($request) {
+                return array_merge((new Ziggy)->toArray(), [
+                    'location' => $request->url(),
+                ]);
+            },
+            'flash' => [
+                'message' => fn () => $request->session()->get('message')
+            ],
+            'appName' => config('app.name'),
+        ]);
+    }
+}
+EOT
+        );
+        
+        // Register the middleware in the kernel
+        $kernelPath = app_path('Http/Kernel.php');
+        if (file_exists($kernelPath)) {
+            $content = file_get_contents($kernelPath);
+            
+            if (!str_contains($content, '\App\Http\Middleware\HandleInertiaRequests::class')) {
+                $pattern = '/protected \$middlewareGroups = \[\s*\'web\' => \[\s*/';
+                $replacement = "protected \$middlewareGroups = [\n        'web' => [\n            \App\Http\Middleware\HandleInertiaRequests::class,\n            ";
+                
+                $content = preg_replace($pattern, $replacement, $content);
+                file_put_contents($kernelPath, $content);
+            }
+        }
+    }
+}
+
+/**
  * Copy the starter kit stubs to the application.
  *
  * @param  string  $stubsDirectory
@@ -153,7 +240,6 @@ function copy_starter_kit_stubs($stubsDirectory)
         resource_path('css'),
         resource_path('views'),
         app_path('Http/Controllers/Auth'),
-        app_path('Http/Middleware'),
     ];
 
     foreach ($directories as $directory) {
@@ -167,14 +253,14 @@ function copy_starter_kit_stubs($stubsDirectory)
     copy_directory($stubsDirectory.'/css', resource_path('css'));
     copy_directory($stubsDirectory.'/views', resource_path('views'));
     copy_directory($stubsDirectory.'/app/Http/Controllers/Auth', app_path('Http/Controllers/Auth'));
-    copy_directory($stubsDirectory.'/app/Http/Middleware', app_path('Http/Middleware'));
     copy_directory($stubsDirectory.'/config', config_path());
     copy($stubsDirectory.'/vite.config.ts', base_path('vite.config.ts'));
     copy($stubsDirectory.'/tsconfig.json', base_path('tsconfig.json'));
+    copy($stubsDirectory.'/components.json', base_path('components.json'));
 
     // Generate Ziggy routes file
     if (file_exists(base_path('artisan'))) {
-        exec('php artisan ziggy:generate');
+        exec('php artisan ziggy:generate ' . resource_path('js/ziggy.generated.js'));
     }
 }
 

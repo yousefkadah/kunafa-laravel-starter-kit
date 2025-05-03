@@ -1,37 +1,41 @@
-<template>
-  <div class="flex h-screen overflow-hidden">
+<script setup lang="ts">
+import { computed } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
+import KunafaLogo from '@/components/layouts/components/KunafaLogo.vue';
+import Sidebar from '@/components/layouts/components/Sidebar.vue';
+import Header from '@/components/layouts/components/Header.vue';
 
-    <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
+interface Props {
+  title?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: undefined,
+});
+
+const { t } = useI18n();
+
+const pageTitle = computed(() => props.title || t('dashboard.title'));
+</script>
+
+<template>
+  <div class="flex h-screen overflow-hidden bg-white dark:bg-slate-900">
+    <Head :title="pageTitle" />
+
+    <!-- Sidebar -->
+    <Sidebar />
 
     <!-- Content area -->
     <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-      <Header :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+      <!-- Site header -->
+      <Header />
 
-      <main class="p-6 m-2">
-        <slot name="content" />
+      <main class="grow">
+        <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-screen-2xl mx-auto">
+          <slot />
+        </div>
       </main>
     </div>
   </div>
 </template>
-
-<script>
-import { ref } from 'vue'
-import { defineComponent } from 'vue';
-import Sidebar from './components/Sidebar.vue'
-import Header from './components/Header.vue'
-
-export default {
-  name: 'DefaultLayout',
-  components: {
-    Sidebar,
-    Header,
-  },
-  setup() {
-    const sidebarOpen = ref(false)
-
-    return {
-      sidebarOpen,
-    }
-  }
-}
-</script>

@@ -42,6 +42,11 @@ class KunafaServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/views/app.blade.php' => resource_path('views/app.blade.php'),
         ], 'kunafa-views');
         
+        // Publish Inertia middleware
+        $this->publishes([
+            __DIR__.'/../stubs/app/Http/Middleware/HandleInertiaRequests.php' => app_path('Http/Middleware/HandleInertiaRequests.php'),
+        ], 'kunafa-inertia');
+        
         if ($this->app->runningInConsole()) {
             $this->commands([
                 Commands\InstallCommand::class,

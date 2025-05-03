@@ -96,6 +96,13 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcome_message": "Welcome to your Kunafa Dashboard!"
+    "welcome_message": "Welcome to your Kunafa Dashboard!",
+    "statistics": "Statistics",
+    "dashboard_stats": "128+ Active Users",
+    "recent_activity": "Recent Activity",
+    "activity_description": "Your recent activity will appear here. Check back soon!",
+    "quick_actions": "Quick Actions",
+    "action_one": "View Reports",
+    "action_two": "Add New User"
   }
 }

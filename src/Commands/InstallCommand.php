@@ -26,6 +26,8 @@ class InstallCommand extends Command
                 'chartjs-adapter-moment' => '^1.0.1',
                 'flatpickr' => '^4.6.13',
                 'moment' => '^2.29.4',
+                'postcss-import' => '^15.1.0',
+                'postcss-nesting' => '^12.0.2',
                 'postcss-rtlcss' => '^5.1.0',
                 'vue' => '^3.2.20',
                 'vue-chart-3' => '^3.1.8',
@@ -39,7 +41,8 @@ class InstallCommand extends Command
                 'autoprefixer' => '^10.4.19',
                 'postcss' => '^8.4.38',
                 'tailwindcss' => '^3.4.17',
-                'vite' => '^5.0.6'
+                'vite' => '^5.0.6',
+                'sass' => '^1.72.0'
             ] + $packages;
         });
 

@@ -19,6 +19,10 @@ class InstallCommand extends Command
         // Install NPM packages
         $this->updateNodePackages(function ($packages) {
             return [
+                '@inertiajs/vue3' => '^1.0.0',
+                '@inertiajs/inertia' => '^0.11.0',
+                '@inertiajs/inertia-vue3' => '^0.6.0',
+                '@inertiajs/progress' => '^0.2.7',
                 '@intlify/unplugin-vue-i18n' => '^0.13.0',
                 '@vueform/vueform' => '^1.9.2',
                 '@vueuse/core' => '^10.7.0',
@@ -46,6 +50,9 @@ class InstallCommand extends Command
             ] + $packages;
         });
 
+        // Install Laravel Breeze for auth scaffolding
+        $this->requireComposerPackages(['laravel/breeze:^1.28']);
+        
         // Publish configuration
         $this->callSilent('vendor:publish', ['--tag' => 'kunafa-config']);
         
@@ -62,11 +69,83 @@ class InstallCommand extends Command
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/js', resource_path('js'));
         (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/css', resource_path('css'));
         
+        // Copy the authentication views
+        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/auth', resource_path('js/pages/Auth'));
+        
         // Copy Vite configuration
         copy(__DIR__.'/../../stubs/vite.config.js', base_path('vite.config.js'));
         
-        $this->info('Kunafa Dashboard installed successfully.');
+        // Install Inertia middleware
+        $this->installInertiaMiddleware();
+        
+        // Install auth scaffolding
+        $this->callSilent('breeze:install', ['--inertia' => true, '--dark' => true]);
+        
+        $this->info('Kunafa Dashboard installed successfully with authentication components.');
         $this->comment('Please execute the "npm install && npm run dev" command to build your assets.');
+    }
+
+    /**
+     * Install Inertia middleware
+     */
+    protected function installInertiaMiddleware(): void
+    {
+        // Create HandleInertiaRequests middleware if it doesn't exist
+        if (!(new Filesystem)->exists(app_path('Http/Middleware/HandleInertiaRequests.php'))) {
+            (new Filesystem)->copy(
+                __DIR__.'/../../stubs/app/Http/Middleware/HandleInertiaRequests.php',
+                app_path('Http/Middleware/HandleInertiaRequests.php')
+            );
+            
+            // Register middleware in Kernel.php
+            $this->addMiddlewareToKernel();
+        }
+    }
+    
+    /**
+     * Add middleware to kernel
+     */
+    protected function addMiddlewareToKernel(): void
+    {
+        $kernelPath = app_path('Http/Kernel.php');
+        $kernelContents = file_get_contents($kernelPath);
+        
+        if (!str_contains($kernelContents, '\App\Http\Middleware\HandleInertiaRequests::class')) {
+            $pattern = '/protected \$middlewareGroups = \[\s*\'web\' => \[\s*/';
+            $replacement = "protected \$middlewareGroups = [\n        'web' => [\n            \App\Http\Middleware\HandleInertiaRequests::class,\n            ";
+            
+            $updatedKernelContents = preg_replace($pattern, $replacement, $kernelContents);
+            file_put_contents($kernelPath, $updatedKernelContents);
+        }
+    }
+
+    /**
+     * Require composer packages
+     */
+    protected function requireComposerPackages(array $packages): bool
+    {
+        $composer = $this->option('composer');
+
+        if ($composer !== 'global') {
+            $command = ['php', $composer, 'require'];
+        }
+
+        $command = array_merge(
+            $command ?? ['composer', 'require'],
+            $packages
+        );
+
+        $process = new Process($command, base_path(), null, null, null);
+
+        if ('\\' !== DIRECTORY_SEPARATOR && file_exists('/dev/tty') && is_readable('/dev/tty')) {
+            $process->setTty(true);
+        }
+
+        $process->run(function ($type, $line) {
+            $this->output->write($line);
+        });
+
+        return $process->isSuccessful();
     }
 
     /**

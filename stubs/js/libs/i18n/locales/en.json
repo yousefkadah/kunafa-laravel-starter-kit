@@ -73,5 +73,29 @@
         "open_issue_github_btn": "Open Issue in Github"
       }
     }
+  },
+  "login": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "remember_me": "Remember me",
+    "forgot_password": "Forgot password?",
+    "login": "Sign In",
+    "no_account": "Don't have an account?",
+    "create_account": "Create one now"
+  },
+  "register": {
+    "title": "Create Account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "register": "Register",
+    "have_account": "Already have an account?",
+    "sign_in": "Sign in"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome_message": "Welcome to your Kunafa Dashboard!"
   }
 }

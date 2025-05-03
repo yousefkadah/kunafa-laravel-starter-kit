@@ -3,6 +3,7 @@
 namespace Kunafa\StarterKit\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DashboardController
 {
@@ -11,6 +12,8 @@ class DashboardController
      */
     public function index()
     {
-        return view('kunafa::dashboard');
+        return Inertia::render('Dashboard', [
+            'user' => auth()->user(),
+        ]);
     }
 }

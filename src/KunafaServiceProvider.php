@@ -39,6 +39,7 @@ class KunafaServiceProvider extends ServiceProvider
         // Publish views
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/kunafa'),
+            __DIR__.'/../stubs/views/app.blade.php' => resource_path('views/app.blade.php'),
         ], 'kunafa-views');
         
         if ($this->app->runningInConsole()) {

@@ -52,22 +52,27 @@ return [
             '--force' => true,
         ]);
         
+        // Install Laravel Breeze for auth scaffolding
+        $console->info('Installing Laravel Breeze...');
+        $console->call('composer:require', [
+            'laravel/breeze:^1.28',
+        ]);
+        
+        // Run the Kunafa installation command
+        $console->info('Installing Kunafa Dashboard...');
         $console->call('kunafa:install');
         
-        // Install NPM dependencies and build assets
-        $console->info('Installing NPM dependencies...');
-        $console->newLine();
+        // Run database migrations
+        $console->info('Running migrations...');
+        $console->call('migrate');
         
+        // Install NPM dependencies and build assets
+        $console->info('Installing and building frontend assets...');
         if (file_exists(base_path('package.json'))) {
             $console->call('npm:install');
             $console->call('npm:build');
         }
         
-        // Run migrations
-        $console->info('Running migrations...');
-        $console->newLine();
-        $console->call('migrate');
-        
-        $console->info('Kunafa Dashboard installed successfully.');
+        $console->info('Kunafa Dashboard installed successfully with authentication components.');
     },
 ];

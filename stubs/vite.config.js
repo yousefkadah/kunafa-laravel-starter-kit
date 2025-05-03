@@ -26,6 +26,7 @@ export default defineConfig({
         alias: {
             '@': '/resources/js/kunafa',
             '~': '/resources/js/kunafa',
+            'ziggy': '/vendor/tightenco/ziggy/dist/vue.es.js',
         },
     },
 });

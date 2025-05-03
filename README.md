@@ -1,10 +1,11 @@
 # Kunafa Dashboard Laravel Starter Kit
 
-A custom Laravel starter kit featuring the Kunafa Dashboard Vue template with RTL support, multi-language capabilities, charts, datatables, and more.
+A custom Laravel starter kit featuring the Kunafa Dashboard Vue template with RTL support, multi-language capabilities, charts, datatables, and more. The starter kit now includes full authentication with Inertia.js integration.
 
 ## Features
 
 - Modern Vue 3 dashboard with Tailwind CSS
+- Full authentication system with Inertia.js
 - RTL support for Arabic and other right-to-left languages
 - Multi-language support
 - Charts and data visualization
@@ -69,7 +70,19 @@ php artisan migrate
 php artisan serve
 ```
 
-Visit `http://localhost:8000/dashboard` to see your Kunafa Dashboard in action!
+Visit `http://localhost:8000` to see your Kunafa Dashboard in action!
+
+## Authentication
+
+The starter kit includes a complete authentication system built on Inertia.js:
+
+- Login
+- Registration
+- Password Reset
+- Email Verification
+- Profile Management
+
+These features are seamlessly integrated with the Kunafa Dashboard UI.
 
 ## Configuration
 

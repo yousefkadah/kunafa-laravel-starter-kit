@@ -91,14 +91,26 @@ class InstallCommand extends Command
      */
     protected function configureAuth(): void
     {
+        // Create auth controllers directory if it doesn't exist
+        $authControllerDir = app_path('Http/Controllers/Auth');
+        if (!(new Filesystem)->isDirectory($authControllerDir)) {
+            (new Filesystem)->makeDirectory($authControllerDir, 0755, true);
+        }
+        
         // Copy auth controllers
-        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/app/Http/Controllers/Auth', app_path('Http/Controllers/Auth'));
+        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/app/Http/Controllers/Auth', $authControllerDir);
         
         // Add auth routes
         $this->addAuthRoutes();
         
+        // Ensure js/layouts/auth directory exists
+        $authLayoutDir = resource_path('js/layouts/auth');
+        if (!(new Filesystem)->isDirectory($authLayoutDir)) {
+            (new Filesystem)->makeDirectory($authLayoutDir, 0755, true);
+        }
+        
         // Create auth layout
-        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/js/layouts/auth', resource_path('js/layouts'));
+        (new Filesystem)->copyDirectory(__DIR__.'/../../stubs/js/layouts/auth', $authLayoutDir);
     }
     
     /**
@@ -141,11 +153,18 @@ EOT;
      */
     protected function installInertiaMiddleware(): void
     {
+        $middlewarePath = app_path('Http/Middleware/HandleInertiaRequests.php');
+        
+        // Ensure the directory exists
+        if (!(new Filesystem)->isDirectory(dirname($middlewarePath))) {
+            (new Filesystem)->makeDirectory(dirname($middlewarePath), 0755, true);
+        }
+        
         // Create HandleInertiaRequests middleware if it doesn't exist
-        if (!(new Filesystem)->exists(app_path('Http/Middleware/HandleInertiaRequests.php'))) {
+        if (!(new Filesystem)->exists($middlewarePath)) {
             (new Filesystem)->copy(
                 __DIR__.'/../../stubs/app/Http/Middleware/HandleInertiaRequests.php',
-                app_path('Http/Middleware/HandleInertiaRequests.php')
+                $middlewarePath
             );
             
             // Register middleware in Kernel.php

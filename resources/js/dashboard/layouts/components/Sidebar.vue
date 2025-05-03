@@ -82,16 +82,58 @@
                   :class="!parentLink.expanded && 'hidden'"
                 >
                   <li v-for="child in route.children" :key="child.name" class="mb-1 last:mb-0">
-                    <Link
-                      class="flex items-center block transition duration-150 truncate text-slate-400 hover:text-slate-200"
-                      :href="child.path"
-                    >
-                      <Icon :icon="child.meta.icon" class="sm-icon" />
-                      <span
-                        class="text-sm font-medium ltr:ml-2 rtl:mr-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
-                        >{{ child.meta.label }}</span
+                    <!-- Handle nested children (Forms and Tables submenus) -->
+                    <template v-if="child.children">
+                      <a
+                        class="flex items-center block transition duration-150 truncate text-slate-400 hover:text-slate-200"
+                        href="#0"
+                        @click.prevent="child.expanded = !child.expanded"
                       >
-                    </Link>
+                        <Icon :icon="child.meta.icon" class="sm-icon" />
+                        <span
+                          class="text-sm font-medium ltr:ml-2 rtl:mr-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                          >{{ child.meta.label }}</span
+                        >
+                        <svg
+                          class="w-3 h-3 shrink-0 ltr:ml-1 rtl:mr-1 fill-current text-slate-400"
+                          :class="child.expanded && 'rotate-180'"
+                          viewBox="0 0 12 12"
+                        >
+                          <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                        </svg>
+                      </a>
+                      <!-- Nested submenu -->
+                      <ul
+                        class="ltr:pl-4 rtl:pr-4 mt-1"
+                        :class="!child.expanded && 'hidden'"
+                      >
+                        <li v-for="subChild in child.children" :key="subChild.name" class="mb-1 last:mb-0">
+                          <Link
+                            class="flex items-center block transition duration-150 truncate text-slate-400 hover:text-slate-200"
+                            :href="subChild.path"
+                          >
+                            <Icon :icon="subChild.meta.icon" class="sm-icon" />
+                            <span
+                              class="text-sm font-medium ltr:ml-2 rtl:mr-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                              >{{ subChild.meta.label }}</span
+                            >
+                          </Link>
+                        </li>
+                      </ul>
+                    </template>
+                    <!-- Regular submenu item without nested children -->
+                    <template v-else>
+                      <Link
+                        class="flex items-center block transition duration-150 truncate text-slate-400 hover:text-slate-200"
+                        :href="child.path"
+                      >
+                        <Icon :icon="child.meta.icon" class="sm-icon" />
+                        <span
+                          class="text-sm font-medium ltr:ml-2 rtl:mr-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200"
+                          >{{ child.meta.label }}</span
+                        >
+                      </Link>
+                    </template>
                   </li>
                 </ul>
               </div>
@@ -180,6 +222,7 @@ export default {
           {
             path: "#",
             name: "forms-group",
+            expanded: false, // Initialize expanded state
             meta: {
               label: "Forms",
               icon: "mdi:form-select",
@@ -222,6 +265,7 @@ export default {
           {
             path: "#",
             name: "datatable-group",
+            expanded: false, // Initialize expanded state
             meta: {
               label: "Data Tables",
               icon: "mdi:table",

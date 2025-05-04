@@ -1,4 +1,4 @@
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 type Appearance = 'light' | 'dark' | 'system';
 
@@ -64,6 +64,14 @@ export function initializeTheme() {
 
 export function useAppearance() {
     const appearance = ref<Appearance>('system');
+    
+    // Add computed property for isDarkMode
+    const isDarkMode = computed(() => {
+        if (appearance.value === 'system') {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        return appearance.value === 'dark';
+    });
 
     onMounted(() => {
         const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
@@ -71,6 +79,9 @@ export function useAppearance() {
         if (savedAppearance) {
             appearance.value = savedAppearance;
         }
+        
+        // Initialize theme on mount
+        updateTheme(appearance.value);
     });
 
     function updateAppearance(value: Appearance) {
@@ -84,9 +95,17 @@ export function useAppearance() {
 
         updateTheme(value);
     }
+    
+    // Add toggleTheme function
+    function toggleTheme() {
+        const newTheme = isDarkMode.value ? 'light' : 'dark';
+        updateAppearance(newTheme);
+    }
 
     return {
         appearance,
         updateAppearance,
+        isDarkMode,
+        toggleTheme
     };
 }

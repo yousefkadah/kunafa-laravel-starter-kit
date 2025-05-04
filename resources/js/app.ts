@@ -31,16 +31,48 @@ declare module 'vite/client' {
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-// Define a global theme manager
+// Define a global theme manager with improved implementation
 window.toggleTheme = () => {
   const isDark = document.documentElement.classList.contains('dark');
+  
+  // Prevent unnecessary toggling if we're already in a toggle operation
+  if (window.isTogglingTheme) return isDark;
+  
+  // Set flag to prevent recursive calls
+  window.isTogglingTheme = true;
+  
+  // Toggle dark class
   document.documentElement.classList.toggle('dark', !isDark);
+  
+  // Also add/remove the class from body for redundancy
+  document.body.classList.toggle('dark', !isDark);
+  
+  // Store in localStorage
   localStorage.setItem('appearance', !isDark ? 'dark' : 'light');
   
-  // Force a repaint
+  // Set color-scheme CSS property to help browsers with native elements
+  document.documentElement.style.colorScheme = !isDark ? 'dark' : 'light';
+  
+  // Force a repaint with multiple techniques to ensure it works across browsers
   document.body.style.display = 'none';
   document.body.offsetHeight; // Force a reflow
   document.body.style.display = '';
+  
+  // Also try a resize event to encourage components to update
+  window.dispatchEvent(new Event('resize'));
+  
+  // Add a custom event that can be listened for
+  document.documentElement.dispatchEvent(new CustomEvent('themechange', { 
+    detail: { theme: !isDark ? 'dark' : 'light' } 
+  }));
+  
+  // Log for debugging
+  console.log('Theme toggled to:', !isDark ? 'dark' : 'light');
+  
+  // Reset flag after a short delay
+  setTimeout(() => {
+    window.isTogglingTheme = false;
+  }, 100);
   
   return !isDark;
 };

@@ -1,5 +1,13 @@
 import { onMounted, ref, computed, watchEffect } from 'vue';
 
+// Add TypeScript declaration for our global window properties
+declare global {
+    interface Window {
+        toggleTheme: () => boolean;
+        isTogglingTheme: boolean;
+    }
+}
+
 type Appearance = 'light' | 'dark' | 'system';
 
 export function updateTheme(value: Appearance) {
@@ -7,8 +15,14 @@ export function updateTheme(value: Appearance) {
         return;
     }
 
+    // Skip updating if we're already in the middle of a theme toggle
+    if (window.isTogglingTheme) return;
+    
     const isDark = value === 'dark' || 
                   (value === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    // Set flag to prevent recursive calls
+    window.isTogglingTheme = true;
     
     // Apply to html element
     document.documentElement.classList.toggle('dark', isDark);
@@ -16,10 +30,18 @@ export function updateTheme(value: Appearance) {
     // Also apply to body for extra insurance
     document.body.classList.toggle('dark', isDark);
     
+    // Set color-scheme CSS property to help browsers with native elements
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    
     // Force a repaint to ensure the changes take effect immediately
     document.body.style.display = 'none';
     document.body.offsetHeight; // Force a reflow
     document.body.style.display = '';
+    
+    // Reset flag after the repaint
+    setTimeout(() => {
+        window.isTogglingTheme = false;
+    }, 100);
 }
 
 const setCookie = (name: string, value: string, days = 365) => {
@@ -74,6 +96,11 @@ export function useAppearance() {
     const isDarkMode = computed(() => {
         if (typeof window === 'undefined') return false;
         
+        // Check the actual DOM state first to ensure we're in sync with other theme toggles
+        if (document.documentElement.classList.contains('dark')) {
+            return true;
+        }
+        
         if (appearance.value === 'system') {
             return window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
@@ -89,36 +116,68 @@ export function useAppearance() {
         
         // Initialize theme on mount with a slight delay to ensure DOM is ready
         setTimeout(() => {
-            updateTheme(appearance.value);
-        }, 0);
+            if (!window.isTogglingTheme) {
+                updateTheme(appearance.value);
+            }
+        }, 50);
         
-        // Watch for changes to isDarkMode and update HTML element class
+        // Listen for theme change events from other components
+        document.documentElement.addEventListener('themechange', (event: any) => {
+            if (window.isTogglingTheme) return;
+            
+            if (event.detail && event.detail.theme) {
+                const newAppearance = event.detail.theme as Appearance;
+                if (appearance.value !== newAppearance) {
+                    appearance.value = newAppearance;
+                }
+            }
+        });
+        
+        // Watch for changes to isDarkMode and update HTML element class only if we're not already toggling
         watchEffect(() => {
-            document.documentElement.classList.toggle('dark', isDarkMode.value);
-            document.body.classList.toggle('dark', isDarkMode.value);
+            if (window.isTogglingTheme) return;
+            
+            const docIsDark = document.documentElement.classList.contains('dark');
+            if (docIsDark !== isDarkMode.value) {
+                document.documentElement.classList.toggle('dark', isDarkMode.value);
+                document.body.classList.toggle('dark', isDarkMode.value);
+            }
         });
     });
 
     function updateAppearance(value: Appearance) {
-        appearance.value = value;
-
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', value);
-
-        // Store in cookie for SSR...
-        setCookie('appearance', value);
-
-        // Apply theme change immediately and force a repaint
-        updateTheme(value);
+        if (window.isTogglingTheme) return;
         
-        // Dispatch a custom event that can be used to trigger updates in components
-        window.dispatchEvent(new CustomEvent('appearance-changed', { detail: { appearance: value } }));
+        if (appearance.value !== value) {
+            appearance.value = value;
+            
+            // Store in localStorage for client-side persistence
+            localStorage.setItem('appearance', value);
+            
+            // Store in cookie for SSR
+            setCookie('appearance', value);
+            
+            // Apply theme change immediately
+            updateTheme(value);
+        }
     }
     
-    // Add toggleTheme function
+    // Use the global toggleTheme if available
     function toggleTheme() {
-        const newTheme = isDarkMode.value ? 'light' : 'dark';
-        updateAppearance(newTheme);
+        if (window.isTogglingTheme) return;
+        
+        if (window.toggleTheme) {
+            // Use the global function to ensure consistency
+            const isDark = window.toggleTheme();
+            // Update our local state based on the result
+            setTimeout(() => {
+                appearance.value = isDark ? 'dark' : 'light';
+            }, 150);
+        } else {
+            // Fallback to local implementation
+            const newTheme = isDarkMode.value ? 'light' : 'dark';
+            updateAppearance(newTheme);
+        }
     }
 
     return {

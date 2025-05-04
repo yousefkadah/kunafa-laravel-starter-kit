@@ -2,7 +2,8 @@
   <div>
     <button
       class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600/80 rounded-full"
-      @click="toggleTheme"
+      @click="handleToggleTheme"
+      :disabled="isToggling"
     >
       <span class="sr-only">Switch Theme</span>
       <Icon 
@@ -20,35 +21,60 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Use reactive state for dark mode
+// Track dark mode state
 const isDark = ref(false)
+const isToggling = ref(false)
 
-// Update the isDark state when the component mounts
-onMounted(() => {
-  // Initialize based on HTML class
-  isDark.value = document.documentElement.classList.contains('dark')
+// Function to check current theme state
+const checkDarkMode = () => {
+  return document.documentElement.classList.contains('dark')
+}
+
+// Function to handle theme toggle with improved reliability
+function handleToggleTheme() {
+  if (isToggling.value || window.isTogglingTheme) return;
   
-  // Listen for changes to the HTML class
+  isToggling.value = true;
+  
+  if (window.toggleTheme) {
+    // Call the global toggle function
+    isDark.value = window.toggleTheme()
+  } else {
+    // Fallback implementation if global function not available
+    const currentIsDark = checkDarkMode()
+    document.documentElement.classList.toggle('dark', !currentIsDark)
+    document.body.classList.toggle('dark', !currentIsDark)
+    localStorage.setItem('appearance', !currentIsDark ? 'dark' : 'light')
+    isDark.value = !currentIsDark
+  }
+  
+  // Allow clicks again after a short delay
+  setTimeout(() => {
+    isToggling.value = false;
+  }, 200);
+}
+
+onMounted(() => {
+  // Initialize dark mode state based on HTML class
+  isDark.value = checkDarkMode()
+  
+  // Listen for theme changes from other components
+  document.documentElement.addEventListener('themechange', (event) => {
+    isDark.value = event.detail.theme === 'dark'
+  })
+  
+  // Also listen for class changes directly on the HTML element
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.attributeName === 'class') {
-        isDark.value = document.documentElement.classList.contains('dark')
+        isDark.value = checkDarkMode()
       }
     })
   })
   
-  // Start observing
   observer.observe(document.documentElement, { attributes: true })
 })
-
-// Function to toggle the theme
-function toggleTheme() {
-  // Call the global toggle function we added to app.ts
-  if (window.toggleTheme) {
-    isDark.value = window.toggleTheme()
-  }
-}
 </script>

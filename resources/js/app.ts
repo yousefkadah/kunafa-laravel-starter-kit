@@ -30,6 +30,20 @@ declare module 'vite/client' {
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+// Define a global theme manager
+window.toggleTheme = () => {
+  const isDark = document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark', !isDark);
+  localStorage.setItem('appearance', !isDark ? 'dark' : 'light');
+  
+  // Force a repaint
+  document.body.style.display = 'none';
+  document.body.offsetHeight; // Force a reflow
+  document.body.style.display = '';
+  
+  return !isDark;
+};
+
 // Create i18n instance
 const i18n = createI18n({
     locale: localStorage.getItem('locale') || 'en',

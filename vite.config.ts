@@ -35,6 +35,10 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
             '~': path.resolve(__dirname, './'),
+            '@components': path.resolve(__dirname, './resources/js/components'),
+            '@services': path.resolve(__dirname, './resources/js/services'),
+            '@utils': path.resolve(__dirname, './resources/js/utils'),
+            '@pages': path.resolve(__dirname, './resources/js/pages'),
         },
     },
     build: {

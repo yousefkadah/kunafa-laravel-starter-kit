@@ -1,25 +1,63 @@
 <script setup>
-import { ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import DefaultLayout from '../../../dashboard/layouts/default.vue';
-import SelectedLanguage from '../../../dashboard/services/LanguageService.js';
+import { ref, onMounted, watch } from 'vue'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarController
+} from 'chart.js'
 
-// Get language direction from the language service
-const { currentLanguage, langDirection } = SelectedLanguage();
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarController
+)
 
-// Import the charts component dynamically
-const BarChartsComponent = () => import('../../../dashboard/views/pages/charts/BarCharts.vue');
+const props = defineProps({
+  chartData: {
+    type: Object,
+    required: true
+  },
+  chartOptions: {
+    type: Object,
+    default: () => ({
+      responsive: true,
+      maintainAspectRatio: false
+    })
+  }
+})
+
+const chartCanvas = ref(null)
+let chart = null
+
+onMounted(() => {
+  if (chartCanvas.value) {
+    chart = new ChartJS(chartCanvas.value, {
+      type: 'bar',
+      data: props.chartData,
+      options: props.chartOptions
+    })
+  }
+})
+
+watch(() => props.chartData, (newData) => {
+  if (chart) {
+    chart.data = newData
+    chart.update()
+  }
+}, { deep: true })
 </script>
 
 <template>
-  <Head title="Bar Charts" />
-  
-  <div :dir="langDirection">
-    <DefaultLayout>
-      <template #content>
-        <!-- Load the bar charts component -->
-        <component :is="BarChartsComponent" />
-      </template>
-    </DefaultLayout>
+  <div class="w-full h-80">
+    <canvas ref="chartCanvas"></canvas>
   </div>
 </template>

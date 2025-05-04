@@ -1,25 +1,65 @@
 <script setup>
-import { ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import DefaultLayout from '../../../dashboard/layouts/default.vue';
-import SelectedLanguage from '../../../dashboard/services/LanguageService.js';
+import { ref, onMounted, watch } from 'vue'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  LineController
+} from 'chart.js'
 
-// Get language direction from the language service
-const { currentLanguage, langDirection } = SelectedLanguage();
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  LineController
+)
 
-// Import the charts component dynamically
-const LineChartsComponent = () => import('../../../dashboard/views/pages/charts/LineCharts.vue');
+const props = defineProps({
+  chartData: {
+    type: Object,
+    required: true
+  },
+  chartOptions: {
+    type: Object,
+    default: () => ({
+      responsive: true,
+      maintainAspectRatio: false
+    })
+  }
+})
+
+const chartCanvas = ref(null)
+let chart = null
+
+onMounted(() => {
+  if (chartCanvas.value) {
+    chart = new ChartJS(chartCanvas.value, {
+      type: 'line',
+      data: props.chartData,
+      options: props.chartOptions
+    })
+  }
+})
+
+watch(() => props.chartData, (newData) => {
+  if (chart) {
+    chart.data = newData
+    chart.update()
+  }
+}, { deep: true })
 </script>
 
 <template>
-  <Head title="Line Charts" />
-  
-  <div :dir="langDirection">
-    <DefaultLayout>
-      <template #content>
-        <!-- Load the line charts component -->
-        <component :is="LineChartsComponent" />
-      </template>
-    </DefaultLayout>
+  <div class="w-full h-80">
+    <canvas ref="chartCanvas"></canvas>
   </div>
 </template>

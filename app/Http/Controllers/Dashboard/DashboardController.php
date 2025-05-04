@@ -81,7 +81,7 @@ class DashboardController extends Controller
      */
     public function barCharts()
     {
-        return Inertia::render('Dashboard/Charts/BarCharts');
+        return Inertia::render('Dashboard/Pages/BarChartsPage');
     }
 
     public function bubbleCharts()
@@ -96,7 +96,7 @@ class DashboardController extends Controller
 
     public function lineCharts()
     {
-        return Inertia::render('Dashboard/Charts/LineCharts');
+        return Inertia::render('Dashboard/Pages/LineChartsPage');
     }
 
     public function pieCharts()

@@ -1,15 +1,15 @@
 <script setup>
 import { ref, computed, defineAsyncComponent } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import DefaultLayout from '../../dashboard/layouts/default.vue';
-import SelectedLanguage from '../../dashboard/services/LanguageService.js';
+import DefaultLayout from '@/layouts/default.vue';
+import SelectedLanguage from '@services/LanguageService.js';
 
 // Get language direction from the language service
 const { currentLanguage, langDirection } = SelectedLanguage();
 
 // Use defineAsyncComponent for proper handling of dynamic imports
 const MainDashboard = defineAsyncComponent(() => 
-  import('../../dashboard/views/pages/dashboard/MainDashboard.vue')
+  import('@pages/Dashboard/MainDashboard.vue')
 );
 
 // This is where you'd typically fetch your data from Laravel backend

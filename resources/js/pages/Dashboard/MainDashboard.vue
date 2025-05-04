@@ -2,6 +2,20 @@
     <div class="w-full p-4 md:p-6 justify-center">
       <WelcomeGreeting />
       
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <div v-for="(stat, index) in stats" :key="index" 
+             class="bg-white dark:bg-slate-800 shadow-lg rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex flex-col">
+          <h3 class="font-medium text-slate-500 dark:text-slate-400 mb-1">{{ stat.title }}</h3>
+          <p class="text-2xl font-bold text-slate-800 dark:text-slate-100">{{ stat.value }}</p>
+          <div class="flex items-center mt-2">
+            <span :class="stat.change > 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-medium">
+              {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
+            </span>
+            <span class="text-xs text-slate-500 ml-2">vs last month</span>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-12 gap-4 md:gap-6 mb-8">
         <div class="col-span-12 xl:col-span-8">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -28,20 +42,6 @@
               <span class="font-medium">Revenue</span>
               <span class="font-bold">$12,345</span>
             </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-        <div v-for="(stat, index) in stats" :key="index" 
-             class="bg-white dark:bg-slate-800 shadow-lg rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex flex-col">
-          <h3 class="font-medium text-slate-500 dark:text-slate-400 mb-1">{{ stat.title }}</h3>
-          <p class="text-2xl font-bold text-slate-800 dark:text-slate-100">{{ stat.value }}</p>
-          <div class="flex items-center mt-2">
-            <span :class="stat.change > 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-medium">
-              {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
-            </span>
-            <span class="text-xs text-slate-500 ml-2">vs last month</span>
           </div>
         </div>
       </div>

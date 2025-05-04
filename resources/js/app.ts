@@ -6,6 +6,7 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme, updateTheme } from './composables/useAppearance';
+import { detectRTL } from './services/LanguageService';
 
 // Import dashboard dependencies
 import { createPinia } from 'pinia';
@@ -43,6 +44,17 @@ window.toggleTheme = () => {
   
   return !isDark;
 };
+
+// Initialize language direction based on stored locale
+const initializeLanguageDirection = () => {
+    const savedLocale = localStorage.getItem('locale') || 'en';
+    const isRTL = detectRTL(savedLocale);
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.lang = savedLocale;
+};
+
+// Run initialization immediately
+initializeLanguageDirection();
 
 // Create i18n instance
 const i18n = createI18n({

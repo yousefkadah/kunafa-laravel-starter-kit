@@ -60,7 +60,7 @@ export default {
   setup(props, { emit }) {
     const { locale, availableLocales } = useI18n();
     const dropdownOpen = ref(false);
-    const selectedLanguage = ref("en");
+    const selectedLanguage = ref(localStorage.getItem('locale') || "en");
 
     // Using availableLocale to get the languages dynamically then attach the lang direction to it
     var languages = availableLocales.map((lang) => {
@@ -68,6 +68,14 @@ export default {
     });
 
     const currentLanguage = computed(() => locale.value); // ar, en, fr, etc.
+
+    // Apply the direction based on the current language
+    const applyDirection = (langCode) => {
+      const isRTL = detectRTL(langCode);
+      document.documentElement.dir = isRTL ? "rtl" : "ltr";
+      document.documentElement.lang = langCode;
+      return isRTL;
+    };
 
     const toggleDropdown = () => {
       dropdownOpen.value = !dropdownOpen.value;
@@ -78,7 +86,17 @@ export default {
     };
 
     const changeLanguage = (lang) => {
-      selectedLanguage.value = lang;
+      selectedLanguage.value = lang.code;
+      
+      // Save language in localStorage
+      localStorage.setItem('locale', lang.code);
+      
+      // Apply the direction
+      applyDirection(lang.code);
+      
+      // Update i18n locale
+      locale.value = lang.code;
+      
       emit("language-changed", lang.code);
       closeDropdown(); // Close dropdown after language change
     };
@@ -90,6 +108,9 @@ export default {
     };
 
     onMounted(() => {
+      // Apply direction on initial load based on the saved language
+      applyDirection(selectedLanguage.value);
+      
       document.addEventListener("click", handleClickOutside);
     });
 

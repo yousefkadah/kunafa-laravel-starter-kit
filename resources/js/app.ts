@@ -1,5 +1,33 @@
 import '../css/app.css';
 
+// Simple standalone dark mode toggle implementation
+const html = document.documentElement;
+const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+
+// Initialize dark mode based on stored preference
+if (darkModeEnabled) {
+  html.classList.add('dark');
+} else {
+  html.classList.remove('dark');
+}
+
+// Create global function to toggle dark mode
+window.toggleDarkMode = function() {
+  const isDark = html.classList.contains('dark');
+  
+  if (isDark) {
+    html.classList.remove('dark');
+    localStorage.setItem('darkMode', 'false');
+    console.log('Switched to light mode');
+  } else {
+    html.classList.add('dark');
+    localStorage.setItem('darkMode', 'true');
+    console.log('Switched to dark mode');
+  }
+  
+  return !isDark; // Return the new dark mode state
+};
+
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';

@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import DefaultLayout from '../../../dashboard/layouts/default.vue';
-import SelectedLanguage from '../../../dashboard/services/LanguageService.js';
+import DefaultLayout from '../../../layouts/default.vue';
+import SelectedLanguage from '../../../services/LanguageService.js';
 
 // Get language direction from the language service
 const { currentLanguage, langDirection } = SelectedLanguage();

@@ -1,4 +1,4 @@
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watchEffect } from 'vue';
 
 type Appearance = 'light' | 'dark' | 'system';
 
@@ -7,14 +7,19 @@ export function updateTheme(value: Appearance) {
         return;
     }
 
-    if (value === 'system') {
-        const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
-        const systemTheme = mediaQueryList.matches ? 'dark' : 'light';
-
-        document.documentElement.classList.toggle('dark', systemTheme === 'dark');
-    } else {
-        document.documentElement.classList.toggle('dark', value === 'dark');
-    }
+    const isDark = value === 'dark' || 
+                  (value === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    // Apply to html element
+    document.documentElement.classList.toggle('dark', isDark);
+    
+    // Also apply to body for extra insurance
+    document.body.classList.toggle('dark', isDark);
+    
+    // Force a repaint to ensure the changes take effect immediately
+    document.body.style.display = 'none';
+    document.body.offsetHeight; // Force a reflow
+    document.body.style.display = '';
 }
 
 const setCookie = (name: string, value: string, days = 365) => {
@@ -67,6 +72,8 @@ export function useAppearance() {
     
     // Add computed property for isDarkMode
     const isDarkMode = computed(() => {
+        if (typeof window === 'undefined') return false;
+        
         if (appearance.value === 'system') {
             return window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
@@ -80,8 +87,16 @@ export function useAppearance() {
             appearance.value = savedAppearance;
         }
         
-        // Initialize theme on mount
-        updateTheme(appearance.value);
+        // Initialize theme on mount with a slight delay to ensure DOM is ready
+        setTimeout(() => {
+            updateTheme(appearance.value);
+        }, 0);
+        
+        // Watch for changes to isDarkMode and update HTML element class
+        watchEffect(() => {
+            document.documentElement.classList.toggle('dark', isDarkMode.value);
+            document.body.classList.toggle('dark', isDarkMode.value);
+        });
     });
 
     function updateAppearance(value: Appearance) {
@@ -93,7 +108,11 @@ export function useAppearance() {
         // Store in cookie for SSR...
         setCookie('appearance', value);
 
+        // Apply theme change immediately and force a repaint
         updateTheme(value);
+        
+        // Dispatch a custom event that can be used to trigger updates in components
+        window.dispatchEvent(new CustomEvent('appearance-changed', { detail: { appearance: value } }));
     }
     
     // Add toggleTheme function

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen overflow-hidden">
+  <div class="flex h-screen overflow-hidden bg-background text-foreground" :class="{ 'dark': isDarkMode }">
 
     <Sidebar :sidebarOpen="sidebarOpen" @close-sidebar="sidebarOpen = false" />
 
@@ -19,6 +19,7 @@ import { ref } from 'vue'
 import { defineComponent } from 'vue';
 import Sidebar from '../components/dashboard/Sidebar.vue'
 import Header from '../components/dashboard/Header.vue'
+import { useAppearance } from '../composables/useAppearance'
 
 export default {
   name: 'DefaultLayout',
@@ -28,9 +29,11 @@ export default {
   },
   setup() {
     const sidebarOpen = ref(false)
+    const { isDarkMode } = useAppearance()
 
     return {
       sidebarOpen,
+      isDarkMode
     }
   }
 }

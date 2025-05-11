@@ -1,39 +1,108 @@
 import '../css/app.css';
 
-// Simple standalone dark mode toggle implementation
-const html = document.documentElement;
-const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
-
-// Initialize dark mode based on stored preference
-if (darkModeEnabled) {
-  html.classList.add('dark');
-} else {
-  html.classList.remove('dark');
-}
-
-// Create global function to toggle dark mode
-window.toggleDarkMode = function() {
-  const isDark = html.classList.contains('dark');
+// SIMPLIFIED DARK MODE IMPLEMENTATION
+// This is a clean implementation with no dependencies
+(() => {
+  // Define elements we'll work with
+  const html = document.documentElement;
+  const body = document.body;
   
-  if (isDark) {
-    html.classList.remove('dark');
-    localStorage.setItem('darkMode', 'false');
-    console.log('Switched to light mode');
-  } else {
-    html.classList.add('dark');
-    localStorage.setItem('darkMode', 'true');
-    console.log('Switched to dark mode');
+  // For debugging
+  let debugMode = false;
+  const log = (...args) => {
+    if (debugMode) console.log('[Theme]', ...args);
+  };
+  
+  // Function to determine if user preference is dark
+  function isSystemDarkMode() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
   
-  return !isDark; // Return the new dark mode state
-};
+  // Function to get saved mode from localStorage
+  function getSavedMode() {
+    const savedMode = localStorage.getItem('themeMode');
+    log('Saved mode:', savedMode);
+    return savedMode;
+  }
+  
+  // Function to set saved mode in localStorage
+  function setSavedMode(mode) {
+    log('Setting mode to:', mode);
+    localStorage.setItem('themeMode', mode);
+  }
+  
+  // Function to apply dark mode
+  function applyDarkMode(isDark) {
+    log('Applying dark mode:', isDark);
+    
+    if (isDark) {
+      html.classList.add('dark');
+      body.classList.add('dark');
+      html.style.colorScheme = 'dark';
+    } else {
+      html.classList.remove('dark');
+      body.classList.remove('dark');
+      html.style.colorScheme = 'light';
+    }
+  }
 
+  // Function to initialize theme on page load
+  function initializeTheme() {
+    log('Initializing theme');
+    const savedMode = getSavedMode();
+    
+    switch (savedMode) {
+      case 'dark':
+        applyDarkMode(true);
+        break;
+      case 'light':
+        applyDarkMode(false);
+        break;
+      default:
+        // If no saved preference, use system preference
+        applyDarkMode(isSystemDarkMode());
+        break;
+    }
+  }
+
+  // Global toggle function that's extremely simple
+  window.toggleTheme = function() {
+    log('Toggle theme called');
+    const isDark = html.classList.contains('dark');
+    const newMode = isDark ? 'light' : 'dark';
+    
+    applyDarkMode(!isDark);
+    setSavedMode(newMode);
+    
+    // Dispatch a custom event for components that need to react
+    window.dispatchEvent(new CustomEvent('theme-changed', {
+      detail: { isDark: !isDark }
+    }));
+    
+    return !isDark;
+  };
+  
+  // Watch for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    log('System preference changed', e.matches);
+    const savedMode = getSavedMode();
+    
+    // Only apply system preference if user hasn't set a preference
+    if (!savedMode) {
+      applyDarkMode(e.matches);
+    }
+  });
+  
+  // Initialize theme immediately
+  initializeTheme();
+})();
+
+// Rest of your app imports
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
-import { initializeTheme, updateTheme } from './composables/useAppearance';
 import { detectRTL } from './services/LanguageService';
 
 // Import dashboard dependencies
@@ -58,52 +127,6 @@ declare module 'vite/client' {
 }
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-
-// Define a global theme manager with improved implementation
-window.toggleTheme = () => {
-  const isDark = document.documentElement.classList.contains('dark');
-  
-  // Prevent unnecessary toggling if we're already in a toggle operation
-  if (window.isTogglingTheme) return isDark;
-  
-  // Set flag to prevent recursive calls
-  window.isTogglingTheme = true;
-  
-  // Toggle dark class
-  document.documentElement.classList.toggle('dark', !isDark);
-  
-  // Also add/remove the class from body for redundancy
-  document.body.classList.toggle('dark', !isDark);
-  
-  // Store in localStorage
-  localStorage.setItem('appearance', !isDark ? 'dark' : 'light');
-  
-  // Set color-scheme CSS property to help browsers with native elements
-  document.documentElement.style.colorScheme = !isDark ? 'dark' : 'light';
-  
-  // Force a repaint with multiple techniques to ensure it works across browsers
-  document.body.style.display = 'none';
-  document.body.offsetHeight; // Force a reflow
-  document.body.style.display = '';
-  
-  // Also try a resize event to encourage components to update
-  window.dispatchEvent(new Event('resize'));
-  
-  // Add a custom event that can be listened for
-  document.documentElement.dispatchEvent(new CustomEvent('themechange', { 
-    detail: { theme: !isDark ? 'dark' : 'light' } 
-  }));
-  
-  // Log for debugging
-  console.log('Theme toggled to:', !isDark ? 'dark' : 'light');
-  
-  // Reset flag after a short delay
-  setTimeout(() => {
-    window.isTogglingTheme = false;
-  }, 100);
-  
-  return !isDark;
-};
 
 // Initialize language direction based on stored locale
 const initializeLanguageDirection = () => {
@@ -146,6 +169,3 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
-
-// This will set light / dark mode on page load...
-initializeTheme();

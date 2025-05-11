@@ -2,12 +2,11 @@
   <div>
     <button
       class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600/80 rounded-full"
-      @click="handleToggleTheme"
-      :disabled="isToggling"
+      @click="toggleMode"
     >
       <span class="sr-only">Switch Theme</span>
       <Icon 
-        v-if="isDark" 
+        v-if="isDarkMode" 
         icon="fluent:dark-theme-20-filled"
         class="text-slate-500 dark:text-slate-400"
       />
@@ -21,60 +20,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Track dark mode state
-const isDark = ref(false)
-const isToggling = ref(false)
+// Simple dark mode state
+const isDarkMode = ref(document.documentElement.classList.contains('dark'))
 
-// Function to check current theme state
-const checkDarkMode = () => {
-  return document.documentElement.classList.contains('dark')
+// Simple toggle function that uses the global toggleTheme function
+function toggleMode() {
+  if (window.toggleTheme) {
+    // The global function handles everything and returns the new state
+    isDarkMode.value = window.toggleTheme();
+  }
 }
 
-// Function to handle theme toggle with improved reliability
-function handleToggleTheme() {
-  if (isToggling.value || window.isTogglingTheme) return;
-  
-  isToggling.value = true;
-  
-  if (window.toggleTheme) {
-    // Call the global toggle function
-    isDark.value = window.toggleTheme()
-  } else {
-    // Fallback implementation if global function not available
-    const currentIsDark = checkDarkMode()
-    document.documentElement.classList.toggle('dark', !currentIsDark)
-    document.body.classList.toggle('dark', !currentIsDark)
-    localStorage.setItem('appearance', !currentIsDark ? 'dark' : 'light')
-    isDark.value = !currentIsDark
+// Update component when theme changes from elsewhere
+function onThemeChange(event) {
+  if (event && event.detail) {
+    isDarkMode.value = event.detail.isDark;
   }
-  
-  // Allow clicks again after a short delay
-  setTimeout(() => {
-    isToggling.value = false;
-  }, 200);
 }
 
 onMounted(() => {
-  // Initialize dark mode state based on HTML class
-  isDark.value = checkDarkMode()
+  // Set initial state
+  isDarkMode.value = document.documentElement.classList.contains('dark');
   
-  // Listen for theme changes from other components
-  document.documentElement.addEventListener('themechange', (event) => {
-    isDark.value = event.detail.theme === 'dark'
-  })
+  // Listen for theme change events
+  window.addEventListener('theme-changed', onThemeChange);
   
-  // Also listen for class changes directly on the HTML element
+  // Also set up direct DOM observation as a fallback
   const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
+    for (const mutation of mutations) {
       if (mutation.attributeName === 'class') {
-        isDark.value = checkDarkMode()
+        isDarkMode.value = document.documentElement.classList.contains('dark');
       }
-    })
-  })
+    }
+  });
   
-  observer.observe(document.documentElement, { attributes: true })
+  observer.observe(document.documentElement, { attributes: true });
+  
+  // Store for cleanup
+  window._themeObserver = observer;
+})
+
+onUnmounted(() => {
+  // Clean up event listeners
+  window.removeEventListener('theme-changed', onThemeChange);
+  
+  // Clean up observer
+  if (window._themeObserver) {
+    window._themeObserver.disconnect();
+  }
 })
 </script>
